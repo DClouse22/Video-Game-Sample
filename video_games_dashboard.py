@@ -311,10 +311,11 @@ def main():
         genre_sales = filtered_df.groupby('Genre')['Global_Sales'].sum().nlargest(10).reset_index()
         genre_sales = genre_sales.sort_values('Global_Sales')
         
-        fig_genre = px.barh(
+        fig_genre = px.bar(
             genre_sales,
             x='Global_Sales',
             y='Genre',
+             orientation='h',
             color='Global_Sales',
             color_continuous_scale='Plasma',
             labels={'Global_Sales': 'Sales (Millions)', 'Genre': 'Genre'}
