@@ -175,7 +175,7 @@ def main():
     try:
         df = load_data()
     except FileNotFoundError:
-        st.error("❌ Could not find 'video_games_sales.csv'. Please ensure the CSV file is in the same directory as this script.")
+        st.error("❌ Could not find 'video games sales.csv'. Please ensure the CSV file is in the same directory as this script.")
         return
     
     # Sidebar filters
@@ -268,11 +268,11 @@ def main():
             hole=0.4
         )
         fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
     
     with col2:
         st.subheader("Top 10 Games by Global Sales")
-        top_games = filtered_df.nlargest(10, 'Global_Sales')[['Name', 'Platform', 'Global_Sales']]
+        top_games = filtered_df.nlargest(10, 'Global_Sales')[['Name', 'Platform', 'Global_Sales']].copy()
         
         fig_bar = px.bar(
             top_games,
@@ -284,7 +284,7 @@ def main():
             labels={'Global_Sales': 'Sales (Millions)', 'Name': 'Game'}
         )
         fig_bar.update_layout(height=500, showlegend=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width='stretch')
     
     st.divider()
     
@@ -304,7 +304,7 @@ def main():
             labels={'Global_Sales': 'Sales (Millions)', 'Year': 'Year'}
         )
         fig_line.update_traces(line=dict(color='#1f77d2', width=3), marker=dict(size=8))
-        st.plotly_chart(fig_line, use_container_width=True)
+        st.plotly_chart(fig_line, width='stretch')
     
     with col2:
         st.subheader("Global Sales by Genre")
@@ -315,13 +315,13 @@ def main():
             genre_sales,
             x='Global_Sales',
             y='Genre',
-             orientation='h',
+            orientation='h',
             color='Global_Sales',
             color_continuous_scale='Plasma',
             labels={'Global_Sales': 'Sales (Millions)', 'Genre': 'Genre'}
         )
         fig_genre.update_layout(height=400, showlegend=False)
-        st.plotly_chart(fig_genre, use_container_width=True)
+        st.plotly_chart(fig_genre, width='stretch')
     
     st.divider()
     
@@ -333,16 +333,17 @@ def main():
         pub_sales = filtered_df.groupby('Publisher')['Global_Sales'].sum().nlargest(10).reset_index()
         pub_sales = pub_sales.sort_values('Global_Sales')
         
-        fig_pub = px.barh(
+        fig_pub = px.bar(
             pub_sales,
             x='Global_Sales',
             y='Publisher',
+            orientation='h',
             color='Global_Sales',
             color_continuous_scale='Teal',
             labels={'Global_Sales': 'Sales (Millions)', 'Publisher': 'Publisher'}
         )
         fig_pub.update_layout(height=400, showlegend=False)
-        st.plotly_chart(fig_pub, use_container_width=True)
+        st.plotly_chart(fig_pub, width='stretch')
     
     with col2:
         st.subheader("Sales by Category")
@@ -365,7 +366,7 @@ def main():
             labels={'Count': 'Number of Games', 'Category': 'Sales Category'}
         )
         fig_category.update_layout(height=400, showlegend=False, xaxis_tickangle=-45)
-        st.plotly_chart(fig_category, use_container_width=True)
+        st.plotly_chart(fig_category, width='stretch')
     
     st.divider()
     
@@ -377,32 +378,34 @@ def main():
         platform_sales = filtered_df.groupby('Platform')['Global_Sales'].sum().nlargest(15).reset_index()
         platform_sales = platform_sales.sort_values('Global_Sales')
         
-        fig_plat = px.barh(
+        fig_plat = px.bar(
             platform_sales,
             x='Global_Sales',
             y='Platform',
+            orientation='h',
             color='Global_Sales',
             color_continuous_scale='Oranges',
             labels={'Global_Sales': 'Sales (Millions)', 'Platform': 'Platform'}
         )
         fig_plat.update_layout(height=450, showlegend=False)
-        st.plotly_chart(fig_plat, use_container_width=True)
+        st.plotly_chart(fig_plat, width='stretch')
     
     with col2:
         st.subheader("Franchise Performance")
         franchise_sales = filtered_df[filtered_df['Franchise'] != 'Other'].groupby('Franchise')['Global_Sales'].sum().nlargest(10).reset_index()
         franchise_sales = franchise_sales.sort_values('Global_Sales')
         
-        fig_fran = px.barh(
+        fig_fran = px.bar(
             franchise_sales,
             x='Global_Sales',
             y='Franchise',
+            orientation='h',
             color='Global_Sales',
             color_continuous_scale='Reds',
             labels={'Global_Sales': 'Sales (Millions)', 'Franchise': 'Franchise'}
         )
         fig_fran.update_layout(height=400, showlegend=False)
-        st.plotly_chart(fig_fran, use_container_width=True)
+        st.plotly_chart(fig_fran, width='stretch')
     
     st.divider()
     
@@ -425,7 +428,7 @@ def main():
     
     st.dataframe(
         display_df,
-        use_container_width=True,
+        width='stretch',
         height=400
     )
     
