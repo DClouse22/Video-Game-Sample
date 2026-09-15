@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Game Sales Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #0F52BA;
+            --accent-teal: #20B2AA;
+            --accent-purple: #7B68EE;
+            --accent-coral: #FF6B6B;
+            --accent-mint: #26D07C;
+            --bg-main: #FAFBFC;
+            --card-bg: #FFFFFF;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --grid: #F3F4F6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 3px solid var(--accent-teal);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.8em;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.05em;
+            font-weight: 400;
+        }
+
+        .filter-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(15, 82, 186, 0.05);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        input[type="range"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95em;
+            background-color: var(--card-bg);
+            color: var(--text-dark);
+        }
+
+        input[type="range"] {
+            padding: 5px 0;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select:hover {
+            border-color: var(--accent-teal);
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(15, 82, 186, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--accent-teal);
+            box-shadow: 0 4px 12px rgba(15, 82, 186, 0.1);
+        }
+
+        .metric-label {
+            color: var(--text-light);
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            color: var(--primary-blue);
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        /* Section Headers */
+        .section-header {
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-size: 1.3em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            letter-spacing: -0.2px;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(15, 82, 186, 0.05);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            margin-bottom: 10px;
+        }
+
+        .chart-wrapper.large {
+            height: 500px;
+        }
+
+        /* Data Table */
+        .table-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(15, 82, 186, 0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: var(--grid);
+            border-bottom: 2px solid var(--border);
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-blue);
+            font-size: 0.95em;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dark);
+        }
+
+        tbody tr:hover {
+            background-color: var(--grid);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0840a0;
+            box-shadow: 0 4px 12px rgba(15, 82, 186, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--accent-teal);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #1a9a8a;
+            box-shadow: 0 4px 12px rgba(32, 178, 170, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+            font-size: 0.9em;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-wrapper {
+                height: 300px;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--primary-blue);
+        }
+
+        .loader.active {
+            display: block;
+        }
+
+        .error {
+            background-color: #FEE;
+            color: #C33;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #FAA;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Video Game Sales Dashboard</h1>
+            <p class="subtitle">Interactive analysis of global video game sales across regions, platforms, and genres</p>
+        </header>
+
+        <div class="loader" id="loader">⏳ Loading data...</div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <!-- Filters -->
+        <div class="filter-panel">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Year Range</label>
+                    <input type="range" id="yearMin" min="1983" max="2016" value="1983">
+                    <small id="yearDisplay">1983 - 2016</small>
+                </div>
+                <div class="filter-group">
+                    <label>Genre</label>
+                    <select id="genreFilter" multiple>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Platform</label>
+                    <select id="platformFilter" multiple>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Publisher (Top 20)</label>
+                    <select id="publisherFilter" multiple>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn-secondary" onclick="resetFilters()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="section-header">📊 Key Metrics</div>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Games</div>
+                <div class="metric-value" id="metricGames">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Global Sales</div>
+                <div class="metric-value" id="metricGlobalSales">$0M</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">NA Sales</div>
+                <div class="metric-value" id="metricNASales">$0M</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">EU Sales</div>
+                <div class="metric-value" id="metricEUSales">$0M</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">JP Sales</div>
+                <div class="metric-value" id="metricJPSales">$0M</div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="section-header" style="margin-top: 0;">Sales by Region</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartRegion"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="section-header" style="margin-top: 0;">Top 10 Games by Global Sales</div>
+                <div class="chart-wrapper large">
+                    <canvas id="chartTopGames"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="section-header" style="margin-top: 0;">Global Sales by Year</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartYear"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="section-header" style="margin-top: 0;">Top 10 Genres</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartGenre"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 3 -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="section-header" style="margin-top: 0;">Top 10 Publishers</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartPublisher"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="section-header" style="margin-top: 0;">Sales by Platform</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartPlatform"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="section-header">📋 Detailed Game Data</div>
+        <div class="button-group">
+            <button class="btn-secondary" onclick="downloadCSV()">📥 Download CSV</button>
+        </div>
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Game Name</th>
+                        <th>Platform</th>
+                        <th>Year</th>
+                        <th>Genre</th>
+                        <th>Publisher</th>
+                        <th>NA Sales</th>
+                        <th>EU Sales</th>
+                        <th>JP Sales</th>
+                        <th>Other Sales</th>
+                        <th>Global Sales</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <p>Video Game Sales Dashboard | Interactive data visualization</p>
+    </footer>
+
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // Color palette
+        const colors = {
+            primary: '#0F52BA',
+            teal: '#20B2AA',
+            purple: '#7B68EE',
+            coral: '#FF6B6B',
+            mint: '#26D07C'
+        };
+
+        // Load CSV
+        async function loadData() {
+            document.getElementById('loader').classList.add('active');
+            try {
+                const response = await fetch('video games sales.csv');
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        allData = results.data.map(row => ({
+                            ...row,
+                            Year: parseInt(row.Year) || 0,
+                            NA_Sales: parseFloat(row.NA_Sales) || 0,
+                            EU_Sales: parseFloat(row.EU_Sales) || 0,
+                            JP_Sales: parseFloat(row.JP_Sales) || 0,
+                            Other_Sales: parseFloat(row.Other_Sales) || 0,
+                            Global_Sales: parseFloat(row.Global_Sales) || 0
+                        })).filter(row => row.Year > 0);
+
+                        initializeFilters();
+                        applyFilters();
+                        document.getElementById('loader').classList.remove('active');
+                    },
+                    error: (error) => {
+                        showError(`Error parsing CSV: ${error.message}`);
+                    }
+                });
+            } catch (error) {
+                showError(`Error loading CSV: ${error.message}`);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('loader').classList.remove('active');
+        }
+
+        function initializeFilters() {
+            const genres = [...new Set(allData.map(d => d.Genre))].sort();
+            const platforms = [...new Set(allData.map(d => d.Platform))].sort();
+            const publishers = allData
+                .map(d => ({ name: d.Publisher, sales: parseFloat(d.Global_Sales) }))
+                .reduce((acc, item) => {
+                    const existing = acc.find(p => p.name === item.name);
+                    if (existing) {
+                        existing.sales += item.sales;
+                    } else {
+                        acc.push(item);
+                    }
+                    return acc;
+                }, [])
+                .sort((a, b) => b.sales - a.sales)
+                .slice(0, 20)
+                .map(p => p.name)
+                .sort();
+
+            // Populate selects
+            document.getElementById('genreFilter').innerHTML = genres
+                .map(g => `<option value="${g}" selected>${g}</option>`)
+                .join('');
+            
+            document.getElementById('platformFilter').innerHTML = platforms
+                .map(p => `<option value="${p}" selected>${p}</option>`)
+                .join('');
+            
+            document.getElementById('publisherFilter').innerHTML = publishers
+                .map(p => `<option value="${p}" selected>${p}</option>`)
+                .join('');
+        }
+
+        function applyFilters() {
+            const yearMin = parseInt(document.getElementById('yearMin').value);
+            const genres = Array.from(document.getElementById('genreFilter').selectedOptions)
+                .map(o => o.value);
+            const platforms = Array.from(document.getElementById('platformFilter').selectedOptions)
+                .map(o => o.value);
+            const publishers = Array.from(document.getElementById('publisherFilter').selectedOptions)
+                .map(o => o.value);
+
+            filteredData = allData.filter(row => {
+                return row.Year >= yearMin &&
+                       genres.includes(row.Genre) &&
+                       platforms.includes(row.Platform) &&
+                       publishers.includes(row.Publisher);
+            });
+
+            updateDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('yearMin').value = '1983';
+            document.getElementById('genreFilter').querySelectorAll('option').forEach(o => o.selected = true);
+            document.getElementById('platformFilter').querySelectorAll('option').forEach(o => o.selected = true);
+            document.getElementById('publisherFilter').querySelectorAll('option').forEach(o => o.selected = true);
+            applyFilters();
+        }
+
+        function updateDashboard() {
+            updateMetrics();
+            updateCharts();
+            updateTable();
+        }
+
+        function updateMetrics() {
+            const games = new Set(filteredData.map(d => d.Name)).size;
+            const globalSales = filteredData.reduce((sum, d) => sum + d.Global_Sales, 0);
+            const naSales = filteredData.reduce((sum, d) => sum + d.NA_Sales, 0);
+            const euSales = filteredData.reduce((sum, d) => sum + d.EU_Sales, 0);
+            const jpSales = filteredData.reduce((sum, d) => sum + d.JP_Sales, 0);
+
+            document.getElementById('metricGames').textContent = games.toLocaleString();
+            document.getElementById('metricGlobalSales').textContent = `$${globalSales.toFixed(1)}M`;
+            document.getElementById('metricNASales').textContent = `$${naSales.toFixed(1)}M`;
+            document.getElementById('metricEUSales').textContent = `$${euSales.toFixed(1)}M`;
+            document.getElementById('metricJPSales').textContent = `$${jpSales.toFixed(1)}M`;
+        }
+
+        function updateCharts() {
+            // Regional Sales (Pie)
+            const regions = {
+                'North America': filteredData.reduce((sum, d) => sum + d.NA_Sales, 0),
+                'Europe': filteredData.reduce((sum, d) => sum + d.EU_Sales, 0),
+                'Japan': filteredData.reduce((sum, d) => sum + d.JP_Sales, 0),
+                'Other': filteredData.reduce((sum, d) => sum + d.Other_Sales, 0)
+            };
+
+            updateChart('chartRegion', {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(regions),
+                    datasets: [{
+                        data: Object.values(regions),
+                        backgroundColor: [colors.primary, colors.teal, colors.purple, colors.coral],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Top 10 Games
+            const topGames = filteredData
+                .sort((a, b) => b.Global_Sales - a.Global_Sales)
+                .slice(0, 10)
+                .reverse();
+
+            updateChart('chartTopGames', {
+                type: 'barh',
+                type: 'bar',
+                data: {
+                    labels: topGames.map(d => d.Name),
+                    datasets: [{
+                        label: 'Sales (M)',
+                        data: topGames.map(d => d.Global_Sales),
+                        backgroundColor: topGames.map((_, i) => {
+                            const colors_array = [colors.mint, colors.teal, colors.primary, colors.purple, colors.coral];
+                            return colors_array[i % colors_array.length];
+                        }),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Sales by Year
+            const yearData = {};
+            filteredData.forEach(d => {
+                yearData[d.Year] = (yearData[d.Year] || 0) + d.Global_Sales;
+            });
+            const sortedYears = Object.keys(yearData).sort((a, b) => a - b);
+
+            updateChart('chartYear', {
+                type: 'line',
+                data: {
+                    labels: sortedYears,
+                    datasets: [{
+                        label: 'Sales (M)',
+                        data: sortedYears.map(y => yearData[y]),
+                        borderColor: colors.primary,
+                        backgroundColor: 'rgba(15, 82, 186, 0.05)',
+                        borderWidth: 3,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: colors.teal,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Genres
+            const genreData = {};
+            filteredData.forEach(d => {
+                genreData[d.Genre] = (genreData[d.Genre] || 0) + d.Global_Sales;
+            });
+            const topGenres = Object.entries(genreData)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .sort((a, b) => a[1] - b[1]);
+
+            updateChart('chartGenre', {
+                type: 'bar',
+                data: {
+                    labels: topGenres.map(g => g[0]),
+                    datasets: [{
+                        label: 'Sales (M)',
+                        data: topGenres.map(g => g[1]),
+                        backgroundColor: colors.purple,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Publishers
+            const publisherData = {};
+            filteredData.forEach(d => {
+                publisherData[d.Publisher] = (publisherData[d.Publisher] || 0) + d.Global_Sales;
+            });
+            const topPublishers = Object.entries(publisherData)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .sort((a, b) => a[1] - b[1]);
+
+            updateChart('chartPublisher', {
+                type: 'bar',
+                data: {
+                    labels: topPublishers.map(p => p[0]),
+                    datasets: [{
+                        label: 'Sales (M)',
+                        data: topPublishers.map(p => p[1]),
+                        backgroundColor: colors.teal,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Platforms
+            const platformData = {};
+            filteredData.forEach(d => {
+                platformData[d.Platform] = (platformData[d.Platform] || 0) + d.Global_Sales;
+            });
+            const topPlatforms = Object.entries(platformData)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15)
+                .sort((a, b) => a[1] - b[1]);
+
+            updateChart('chartPlatform', {
+                type: 'bar',
+                data: {
+                    labels: topPlatforms.map(p => p[0]),
+                    datasets: [{
+                        label: 'Sales (M)',
+                        data: topPlatforms.map(p => p[1]),
+                        backgroundColor: colors.coral,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateChart(canvasId, config) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+            charts[canvasId] = new Chart(ctx, {
+                ...config,
+                options: {
+                    ...config.options,
+                    scales: config.type === 'line' ? {
+                        y: { beginAtZero: true, grid: { color: 'rgba(200, 200, 200, 0.1)' } }
+                    } : {
+                        x: { grid: { color: 'rgba(200, 200, 200, 0.1)' } },
+                        y: { grid: { color: 'rgba(200, 200, 200, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = filteredData
+                .sort((a, b) => b.Global_Sales - a.Global_Sales)
+                .slice(0, 100)
+                .map(row => `
+                    <tr>
+                        <td>${row.Name}</td>
+                        <td>${row.Platform}</td>
+                        <td>${row.Year}</td>
+                        <td>${row.Genre}</td>
+                        <td>${row.Publisher}</td>
+                        <td>${row.NA_Sales.toFixed(2)}</td>
+                        <td>${row.EU_Sales.toFixed(2)}</td>
+                        <td>${row.JP_Sales.toFixed(2)}</td>
+                        <td>${row.Other_Sales.toFixed(2)}</td>
+                        <td><strong>${row.Global_Sales.toFixed(2)}</strong></td>
+                    </tr>
+                `).join('');
+        }
+
+        function downloadCSV() {
+            const csv = [
+                ['Name', 'Platform', 'Year', 'Genre', 'Publisher', 'NA_Sales', 'EU_Sales', 'JP_Sales', 'Other_Sales', 'Global_Sales'],
+                ...filteredData.map(row => [
+                    row.Name,
+                    row.Platform,
+                    row.Year,
+                    row.Genre,
+                    row.Publisher,
+                    row.NA_Sales.toFixed(2),
+                    row.EU_Sales.toFixed(2),
+                    row.JP_Sales.toFixed(2),
+                    row.Other_Sales.toFixed(2),
+                    row.Global_Sales.toFixed(2)
+                ])
+            ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `video_games_sales_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        document.getElementById('yearMin').addEventListener('input', (e) => {
+            document.getElementById('yearDisplay').textContent = `${e.target.value} - 2016`;
+        });
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>
