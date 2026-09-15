@@ -18,112 +18,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-#  Brand Colors
-BRAND_RED = "#D62828"
-BRAND_BLACK = "#1a1a1a"
-BRAND_GRAY = "#f5f5f5"
-BRAND_BLUE = "#0066cc"
-BRAND_GREEN = "#228B22"
-TEXT_DARK = "#2d2d2d"
-TEXT_LIGHT = "#6b6b6b"
-BORDER_LIGHT = "#e0e0e0"
-
-# Custom CSS with professional, minimal design
-st.markdown(f"""
+# Custom CSS
+st.markdown("""
     <style>
-        :root {{
-            --primary-red: {BRAND_RED};
-            --primary-black: {BRAND_BLACK};
-            --primary-gray: {BRAND_GRAY};
-            --primary-blue: {BRAND_BLUE};
-            --primary-green: {BRAND_GREEN};
-            --text-dark: {TEXT_DARK};
-            --text-light: {TEXT_LIGHT};
-            --border-light: {BORDER_LIGHT};
-        }}
-        
-        /* Main background */
-        .stApp {{
-            background-color: {BRAND_GRAY};
-        }}
-        
-        /* Header styling */
-        .header-title {{
-            color: {BRAND_BLACK};
-            font-size: 2.8em;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin: 0;
-            padding: 20px 0 10px 0;
-            border-bottom: 3px solid {BRAND_RED};
-            padding-bottom: 15px;
-        }}
-        
-        .header-subtitle {{
-            color: {TEXT_LIGHT};
-            font-size: 1em;
-            font-weight: 400;
-            letter-spacing: 0.3px;
-            margin: 8px 0 0 0;
-        }}
-        
-        /* Metric cards - professional minimal */
-        .metric-card {{
-            background-color: white;
-            padding: 24px;
-            border-radius: 0;
-            border-left: 4px solid {BRAND_RED};
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        .metric-card {
+            background-color: #f0f2f6;
+            padding: 20px;
+            border-radius: 10px;
             margin: 10px 0;
-            transition: box-shadow 0.2s ease;
-        }}
-        
-        .metric-card:hover {{
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-        }}
-        
-        /* Subheader styling */
-        .subheader {{
-            color: {BRAND_BLACK};
-            font-weight: 700;
-            font-size: 1.4em;
-            margin-top: 24px;
-            margin-bottom: 16px;
-            letter-spacing: -0.3px;
-        }}
-        
-        /* Divider - minimal line */
-        hr {{
-            border: none;
-            border-top: 1px solid {BORDER_LIGHT};
-            margin: 32px 0;
-        }}
-        
-        /* Sidebar styling */
-        .stSidebar {{
-            background-color: white;
-        }}
-        
-        .stSidebar [data-testid="stSidebarNav"] {{
-            background-color: white;
-        }}
-        
-        /* Text styling */
-        p {{
-            color: {TEXT_DARK};
-            line-height: 1.6;
-        }}
-        
-        /* Caption styling */
-        .stCaption {{
-            color: {TEXT_LIGHT};
-            font-size: 0.85em;
-        }}
-        
-        /* Data table */
-        [data-testid="stDataframe"] {{
-            background-color: white;
-        }}
+        }
+        .header-title {
+            color: #1f77d2;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -256,20 +165,10 @@ def add_calculated_columns(df):
     
     return df
 
-def get_chart_colors():
-    """Return custom color palette matching brand"""
-    return {
-        'primary': '#D62828',      # Red
-        'secondary': '#0066cc',    # Blue
-        'tertiary': '#228B22',     # Green
-        'accent': '#1a1a1a',       # Black
-        'palette': ['#D62828', '#0066cc', '#228B22', '#FF6B6B', '#4ECDC4', '#45B7D1']
-    }
-
 def main():
-    # Header with professional branding
-    st.markdown(f"<h1 class='header-title'>📊 Video Game Sales Dashboard</h1>", unsafe_allow_html=True)
-    st.markdown(f"<p class='header-subtitle'>Data-driven insights into global video game market performance across regions, platforms, and publishers</p>", unsafe_allow_html=True)
+    # Header
+    st.markdown("<h1 class='header-title'>🎮 Video Games Sales Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("*Comprehensive analysis of video game sales data across regions and platforms*")
     st.divider()
     
     # Load data
@@ -321,11 +220,8 @@ def main():
         (df['Publisher'].isin(publishers))
     ]
     
-    # Get brand colors
-    colors = get_chart_colors()
-    
     # Key Metrics Row
-    st.markdown("<p class='subheader'>📊 Key Metrics</p>", unsafe_allow_html=True)
+    st.subheader("📊 Key Metrics")
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
@@ -353,7 +249,7 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<p class='subheader'>Sales by Region</p>", unsafe_allow_html=True)
+        st.subheader("Sales by Region")
         regional_sales = pd.DataFrame({
             'Region': ['North America', 'Europe', 'Japan', 'Other'],
             'Sales': [
@@ -368,20 +264,14 @@ def main():
             regional_sales,
             values='Sales',
             names='Region',
-            color_discrete_sequence=['#D62828', '#0066cc', '#228B22', '#FF6B6B'],
+            color_discrete_sequence=px.colors.qualitative.Set3,
             hole=0.4
         )
         fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        fig_pie.update_layout(
-            font=dict(family="sans-serif", size=12, color="#2d2d2d"),
-            paper_bgcolor='white',
-            plot_bgcolor='white',
-            showlegend=True
-        )
         st.plotly_chart(fig_pie, width='stretch')
     
     with col2:
-        st.markdown("<p class='subheader'>Top 10 Games by Global Sales</p>", unsafe_allow_html=True)
+        st.subheader("Top 10 Games by Global Sales")
         top_games = filtered_df.nlargest(10, 'Global_Sales')[['Name', 'Platform', 'Global_Sales']].copy()
         
         fig_bar = px.bar(
@@ -390,18 +280,10 @@ def main():
             y='Name',
             orientation='h',
             color='Global_Sales',
-            color_continuous_scale=['#4ECDC4', '#228B22', '#D62828'],
+            color_continuous_scale='Viridis',
             labels={'Global_Sales': 'Sales (Millions)', 'Name': 'Game'}
         )
-        fig_bar.update_layout(
-            height=500, 
-            showlegend=False,
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d"),
-            coloraxis_colorbar=dict(thickness=15, len=0.7)
-        )
-        fig_bar.update_xaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_bar.update_layout(height=500, showlegend=False)
         st.plotly_chart(fig_bar, width='stretch')
     
     st.divider()
@@ -410,7 +292,7 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<p class='subheader'>Global Sales by Year</p>", unsafe_allow_html=True)
+        st.subheader("Global Sales by Year")
         yearly_sales = filtered_df.groupby('Year')['Global_Sales'].sum().reset_index()
         
         fig_line = px.line(
@@ -421,22 +303,11 @@ def main():
             title='',
             labels={'Global_Sales': 'Sales (Millions)', 'Year': 'Year'}
         )
-        fig_line.update_traces(
-            line=dict(color='#D62828', width=3),
-            marker=dict(size=8, color='#D62828', symbol='circle')
-        )
-        fig_line.update_layout(
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d"),
-            hovermode='x unified'
-        )
-        fig_line.update_xaxes(gridcolor='#e0e0e0', gridwidth=1)
-        fig_line.update_yaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_line.update_traces(line=dict(color='#1f77d2', width=3), marker=dict(size=8))
         st.plotly_chart(fig_line, width='stretch')
     
     with col2:
-        st.markdown("<p class='subheader'>Global Sales by Genre</p>", unsafe_allow_html=True)
+        st.subheader("Global Sales by Genre")
         genre_sales = filtered_df.groupby('Genre')['Global_Sales'].sum().nlargest(10).reset_index()
         genre_sales = genre_sales.sort_values('Global_Sales')
         
@@ -446,17 +317,10 @@ def main():
             y='Genre',
             orientation='h',
             color='Global_Sales',
-            color_continuous_scale=['#4ECDC4', '#0066cc', '#228B22'],
+            color_continuous_scale='Plasma',
             labels={'Global_Sales': 'Sales (Millions)', 'Genre': 'Genre'}
         )
-        fig_genre.update_layout(
-            height=400, 
-            showlegend=False,
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d")
-        )
-        fig_genre.update_xaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_genre.update_layout(height=400, showlegend=False)
         st.plotly_chart(fig_genre, width='stretch')
     
     st.divider()
@@ -465,7 +329,7 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<p class='subheader'>Top 10 Publishers by Sales</p>", unsafe_allow_html=True)
+        st.subheader("Top 10 Publishers by Sales")
         pub_sales = filtered_df.groupby('Publisher')['Global_Sales'].sum().nlargest(10).reset_index()
         pub_sales = pub_sales.sort_values('Global_Sales')
         
@@ -475,21 +339,14 @@ def main():
             y='Publisher',
             orientation='h',
             color='Global_Sales',
-            color_continuous_scale=['#4ECDC4', '#0066cc', '#D62828'],
+            color_continuous_scale='Teal',
             labels={'Global_Sales': 'Sales (Millions)', 'Publisher': 'Publisher'}
         )
-        fig_pub.update_layout(
-            height=400, 
-            showlegend=False,
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d")
-        )
-        fig_pub.update_xaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_pub.update_layout(height=400, showlegend=False)
         st.plotly_chart(fig_pub, width='stretch')
     
     with col2:
-        st.markdown("<p class='subheader'>Sales by Category</p>", unsafe_allow_html=True)
+        st.subheader("Sales by Category")
         category_order = [
             'Blockbuster (20M+)', 'Major Hit (10-20M)', 'Hit (5-10M)',
             'Successful (1-5M)', 'Moderate (0.5-1M)', 'Niche (0.1-0.5M)', 'Low Seller (<0.1M)'
@@ -505,18 +362,10 @@ def main():
             x='Category',
             y='Count',
             color='Count',
-            color_continuous_scale=['#45B7D1', '#0066cc', '#D62828'],
+            color_continuous_scale='Blues',
             labels={'Count': 'Number of Games', 'Category': 'Sales Category'}
         )
-        fig_category.update_layout(
-            height=400, 
-            showlegend=False, 
-            xaxis_tickangle=-45,
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d")
-        )
-        fig_category.update_yaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_category.update_layout(height=400, showlegend=False, xaxis_tickangle=-45)
         st.plotly_chart(fig_category, width='stretch')
     
     st.divider()
@@ -525,7 +374,7 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<p class='subheader'>Sales by Platform</p>", unsafe_allow_html=True)
+        st.subheader("Sales by Platform")
         platform_sales = filtered_df.groupby('Platform')['Global_Sales'].sum().nlargest(15).reset_index()
         platform_sales = platform_sales.sort_values('Global_Sales')
         
@@ -535,21 +384,14 @@ def main():
             y='Platform',
             orientation='h',
             color='Global_Sales',
-            color_continuous_scale=['#45B7D1', '#228B22', '#D62828'],
+            color_continuous_scale='Oranges',
             labels={'Global_Sales': 'Sales (Millions)', 'Platform': 'Platform'}
         )
-        fig_plat.update_layout(
-            height=450, 
-            showlegend=False,
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d")
-        )
-        fig_plat.update_xaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_plat.update_layout(height=450, showlegend=False)
         st.plotly_chart(fig_plat, width='stretch')
     
     with col2:
-        st.markdown("<p class='subheader'>Franchise Performance</p>", unsafe_allow_html=True)
+        st.subheader("Franchise Performance")
         franchise_sales = filtered_df[filtered_df['Franchise'] != 'Other'].groupby('Franchise')['Global_Sales'].sum().nlargest(10).reset_index()
         franchise_sales = franchise_sales.sort_values('Global_Sales')
         
@@ -559,23 +401,16 @@ def main():
             y='Franchise',
             orientation='h',
             color='Global_Sales',
-            color_continuous_scale=['#FF6B6B', '#D62828', '#8B0000'],
+            color_continuous_scale='Reds',
             labels={'Global_Sales': 'Sales (Millions)', 'Franchise': 'Franchise'}
         )
-        fig_fran.update_layout(
-            height=400, 
-            showlegend=False,
-            paper_bgcolor='white',
-            plot_bgcolor='#f9f9f9',
-            font=dict(family="sans-serif", size=11, color="#2d2d2d")
-        )
-        fig_fran.update_xaxes(gridcolor='#e0e0e0', gridwidth=1)
+        fig_fran.update_layout(height=400, showlegend=False)
         st.plotly_chart(fig_fran, width='stretch')
     
     st.divider()
     
     # Data Table
-    st.markdown("<p class='subheader'>📋 Detailed Game Data</p>", unsafe_allow_html=True)
+    st.subheader("📋 Detailed Game Data")
     
     display_df = filtered_df[[
         'Name', 'Platform', 'Year', 'Genre', 'Publisher',
