@@ -39,7 +39,7 @@ st.markdown("""
 @st.cache_data
 def load_data():
     """Load and process the video games sales data"""
-    df = pd.read_csv('video_games_sales.csv')
+    df = pd.read_csv('video games sales.csv')
     
     # Data cleaning
     df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
